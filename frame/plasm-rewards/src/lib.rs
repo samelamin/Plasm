@@ -22,7 +22,7 @@ use frame_support::{
 };
 use frame_system::ensure_root;
 use pallet_session::SessionManager;
-pub use pallet_staking::Forcing;
+pub use pallet_plasm_staking::{Forcing, ValidatorStatus};
 use sp_runtime::{
     traits::{SaturatedConversion, Zero},
     Perbill, RuntimeDebug,
@@ -58,15 +58,15 @@ impl Default for Releases {
 }
 
 /// Information regarding the active era (era in used in session).
-#[derive(Encode, Decode, RuntimeDebug)]
+#[derive(Encode, Decode, RuntimeDebug, PartialEq, Eq)]
 pub struct ActiveEraInfo {
-	/// Index of era.
-	pub index: EraIndex,
-	/// Moment of start expressed as millisecond from `$UNIX_EPOCH`.
-	///
-	/// Start can be none if start hasn't been set for the era yet,
-	/// Start is set on the first on_finalize of the era to guarantee usage of `Time`.
-	start: Option<u64>,
+    /// Index of era.
+    pub index: EraIndex,
+    /// Moment of start
+    ///
+    /// Start can be none if start hasn't been set for the era yet,
+    /// Start is set on the first on_finalize of the era to guarantee usage of `Time`.
+    pub start: Option<u64>,
 }
 
 pub trait Trait: pallet_session::Trait {
@@ -76,24 +76,13 @@ pub trait Trait: pallet_session::Trait {
     /// Time used for computing era duration.
     type UnixTime: UnixTime;
 
+    /// Validator interface to set total reward for each era
+    type ValidatorInterface: pallet_plasm_staking::ValidatorStatus<BalanceOf<Self>>;
+
     /// Number of sessions per era.
     type SessionsPerEra: Get<SessionIndex>;
 
-    /// Number of eras that staked funds must remain bonded for.
-    type BondingDuration: Get<EraIndex>;
-
-    /// Get the amount of staking for dapps per era.
-    type ComputeEraForDapps: ComputeEraWithParam<EraIndex>;
-
-    /// Get the amount of staking for security per era.
-    type ComputeEraForSecurity: ComputeEraWithParam<EraIndex>;
-
-    /// How to compute total issue PLM for rewards.
-    type ComputeTotalPayout: ComputeTotalPayout<
-        <Self::ComputeEraForSecurity as ComputeEraWithParam<EraIndex>>::Param,
-        <Self::ComputeEraForDapps as ComputeEraWithParam<EraIndex>>::Param,
-    >;
-
+    
     /// The overarching event type.
     type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 }
@@ -126,17 +115,17 @@ decl_storage! {
         /// `[active_era - bounding_duration; active_era]`
         pub BondedEras: Vec<(EraIndex, SessionIndex)>;
 
- 		/// The current era index.
-		///
-		/// This is the latest planned era, depending on how the Session pallet queues the validator
-		/// set, it might be active or not.
-		pub CurrentEra get(fn current_era): Option<EraIndex>;
+        /// The current era index.
+        ///
+        /// This is the latest planned era, depending on how session module queues the validator
+        /// set, it might be active or not.
+        pub CurrentEra get(fn current_era): Option<EraIndex>;
 
-		/// The active era information, it holds index and start.
-		///
-		/// The active era is the era currently rewarded.
-		/// Validator set of this era must be equal to `SessionInterface::validators`.
-		pub ActiveEra get(fn active_era): Option<ActiveEraInfo>;
+        /// The active era information, it holds index and start.
+        ///
+        /// The active era is the era currently rewarded.
+        /// Validator set of this era must be equal to `SessionInterface::validators`.
+        pub ActiveEra get(fn active_era): Option<ActiveEraInfo>;
 
         /// The session index at which the era start for the last `HISTORY_DEPTH` eras
         pub ErasStartSessionIndex get(fn eras_start_session_index):
@@ -176,7 +165,7 @@ decl_error! {
 decl_module! {
     pub struct Module<T: Trait> for enum Call where origin: T::Origin {
         /// Number of sessions per era.
-        //const SessionsPerEra: SessionIndex = <T as pallet_plasm_staking::Trait>::SessionsPerEra::get();
+        const SessionsPerEra: SessionIndex = T::SessionsPerEra::get();
 
         type Error = Error<T>;
 
@@ -190,12 +179,15 @@ decl_module! {
         /// On finalize is called at after rotate session.
         fn on_finalize() {
             // Set the start of the first era.
-            if let Some(mut active_era) = Self::active_era() {
-                if active_era.start.is_none() {
-                    active_era.start = Some(<T as Trait>::UnixTime::now().as_millis().saturated_into::<u64>());
-                    ActiveEra::put(active_era);
-                }
-            }
+			if let Some(mut active_era) = Self::active_era() {
+				if active_era.start.is_none() {
+					let now_as_millis_u64 = T::UnixTime::now().as_millis().saturated_into::<u64>();
+					active_era.start = Some(now_as_millis_u64);
+					// This write only ever happens once, we don't include it in the weight in general
+					ActiveEra::put(active_era);
+				}
+			}
+			// `on_finalize` weight is tracked in `on_initialize`
         }
 
         // ----- Root calls.
@@ -263,23 +255,6 @@ fn migrate<T: Trait>() {
     // }
 }
 
-/// In this implementation `new_session(session)` must be called before `end_session(session-1)`
-/// i.e. the new session must be planned before the ending of the previous session.
-///
-/// Once the first new_session is planned, all session must start and then end in order, though
-/// some session can lag in between the newest session planned and the latest session started.
-impl<T: Trait> pallet_session::SessionManager<T::AccountId> for Module<T> {
-	fn new_session(new_index: SessionIndex) -> Option<Vec<T::AccountId>> {
-		Self::new_session(new_index)
-	}
-	fn start_session(start_index: SessionIndex) {
-		Self::start_session(start_index)
-	}
-	fn end_session(end_index: SessionIndex) {
-		Self::end_session(end_index)
-	}
-}
-
 impl<T: Trait> Module<T> {
     // MUTABLES (DANGEROUS)
 
@@ -301,7 +276,7 @@ impl<T: Trait> Module<T> {
             match ForceEra::get() {
                 Forcing::ForceNew => ForceEra::kill(),
                 Forcing::ForceAlways => (),
-                Forcing::NotForcing if era_length >= <T as Trait>::SessionsPerEra::get() => (),
+                Forcing::NotForcing if era_length >= T::SessionsPerEra::get() => (),
                 _ => return None,
             }
 
@@ -347,68 +322,42 @@ impl<T: Trait> Module<T> {
     /// * update `BondedEras` and apply slashes.
     fn start_era(start_session: SessionIndex) {
         let active_era = ActiveEra::mutate(|active_era| {
-            let new_index = active_era.as_ref().map(|info| info.index + 1).unwrap_or(0);
-            *active_era = Some(ActiveEraInfo {
-                index: new_index,
-                // Set new active era start in next `on_finalize`. To guarantee usage of `UnixTime`
-                start: None,
-            });
-            new_index
-        });
-
-        // let bonding_duration = T::BondingDuration::get();
-
-        BondedEras::mutate(|bonded| {
-            bonded.push((active_era, start_session));
-
-            // if active_era > bonding_duration {
-            //     let first_kept = active_era - bonding_duration;
-            //
-            //     // prune out everything that's from before the first-kept index.
-            //     let n_to_prune = bonded.iter()
-            //         .take_while(|&&(era_idx, _)| era_idx < first_kept)
-            //         .count();
-            //
-            //     // kill slashing metadata.
-            //     for (pruned_era, _) in bonded.drain(..n_to_prune) {
-            //         slashing::clear_era_metadata::<T>(pruned_era);
-            //     }
-            //
-            //     if let Some(&(_, first_session)) = bonded.first() {
-            //         T::SessionInterface::prune_historical_up_to(first_session);
-            //     }
-            // }
-        });
+			let new_index = active_era.as_ref().map(|info| info.index + 1).unwrap_or(0);
+			*active_era = Some(ActiveEraInfo {
+				index: new_index,
+				// Set new active era start in next `on_finalize`. To guarantee usage of `Time`
+				start: None,
+			});
+			new_index
+		});
     }
 
     /// Compute payout for era.
-	fn end_era(active_era: ActiveEraInfo, _session_index: SessionIndex) {
-		// Note: active_era_start can be None if end era is called during genesis config.
+    fn end_era(active_era: ActiveEraInfo, _session_index: SessionIndex) {
+        // Note: active_era_start can be None if end era is called during genesis config.
         if let Some(active_era_start) = active_era.start {
             // The set of total amount of staking.
-			let now_as_millis_u64 = <T as Trait>::UnixTime::now().as_millis().saturated_into::<u64>();
+			let now_as_millis_u64 = T::UnixTime::now().as_millis().saturated_into::<u64>();
 
 			let era_duration = now_as_millis_u64 - active_era_start;
+            let for_security = T::ValidatorInterface::validator_count();
 
             if era_duration != 0 {
-                let total_payout = <T as Trait>::Currency::total_issuance();
-                let for_dapps = T::ComputeEraForDapps::compute(&active_era.index);
-                let for_security = T::ComputeEraForSecurity::compute(&active_era.index);
-
-                let (for_security_reward, for_dapps_rewards) = T::ComputeTotalPayout::compute(
+                let total_payout = T::Currency::total_issuance();
+                let (for_security_reward, for_dapps_rewards) = inflation::compute_total_rewards::<T>(
                     total_payout,
-                    era_duration,
+                    era_duration.saturated_into::<u64>(),
                     for_security,
-                    for_dapps,
+                    0u32,
                 );
-
+                T::ValidatorInterface::set_total_rewards(&active_era.index, total_payout);
                 <ForSecurityEraReward<T>>::insert(active_era.index, for_security_reward);
-                <ForDappsEraReward<T>>::insert(active_era.index, for_dapps_rewards);
+                //<ForDappsEraReward<T>>::insert(active_era.index, for_dapps_rewards);
             }
         }
-	}
+    }
 
-    /// Plan a new era for reward distribution.
+    /// Plan a new era. Return the potential new staking set.
     fn new_era(start_session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
         // Increment or set current era.
         let current_era = CurrentEra::get().map(|s| s + 1).unwrap_or(0);
@@ -419,7 +368,6 @@ impl<T: Trait> Module<T> {
         if let Some(old_era) = current_era.checked_sub(Self::history_depth() + 1) {
             Self::clear_era_information(old_era);
         }
-        
         None
     }
 
@@ -428,6 +376,23 @@ impl<T: Trait> Module<T> {
         ErasStartSessionIndex::remove(era_index);
         <ForDappsEraReward<T>>::remove(era_index);
         <ForSecurityEraReward<T>>::remove(era_index);
+    }
+}
+
+/// In this implementation `new_session(session)` must be called before `end_session(session-1)`
+/// i.e. the new session must be planned before the ending of the previous session.
+///
+/// Once the first new_session is planned, all session must start and then end in order, though
+/// some session can lag in between the newest session planned and the latest session started.
+impl<T: Trait> SessionManager<T::AccountId> for Module<T> {
+    fn new_session(new_index: SessionIndex) -> Option<Vec<T::AccountId>> {
+        Self::new_session(new_index)
+    }
+    fn start_session(start_index: SessionIndex) {
+        Self::start_session(start_index)
+    }
+    fn end_session(end_index: SessionIndex) {
+        Self::end_session(end_index)
     }
 }
 

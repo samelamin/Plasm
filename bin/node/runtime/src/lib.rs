@@ -269,9 +269,17 @@ impl pallet_dapps_staking::Trait for Runtime {
     type Reward = (); // Reward is minted.
     type UnixTime = Timestamp;
     type ComputeRewardsForDapps = pallet_dapps_staking::rewards::VoidableRewardsForDapps;
-    type EraFinder = Staking;
-    type ForDappsEraReward = Staking;
-    type HistoryDepthFinder = Staking;
+    type EraFinder = PlasmRewards;
+    type ForDappsEraReward = PlasmRewards;
+    type HistoryDepthFinder = PlasmRewards;
+    type Event = Event;
+}
+
+impl pallet_plasm_rewards::Trait for Runtime {
+    type Currency = Balances;
+    type UnixTime = Timestamp;
+    type SessionsPerEra = SessionsPerEra;
+    type ValidatorInterface = Staking;
     type Event = Event;
 }
 
@@ -343,18 +351,6 @@ impl pallet_session::historical::Trait for Runtime {
 	type FullIdentificationOf = pallet_plasm_staking::ExposureOf<Runtime>;
 }
 
-
-impl pallet_plasm_rewards::Trait for Runtime {
-    type Currency = Balances;
-    type UnixTime = Timestamp;
-    type SessionsPerEra = SessionsPerEra;
-    type BondingDuration = BondingDuration;
-    type ComputeEraForDapps = pallet_plasm_rewards::DefaultForDappsStaking<Runtime>;
-    type ComputeEraForSecurity = Staking;
-    type ComputeTotalPayout = pallet_plasm_rewards::inflation::CommunityRewards<u128>;
-    type Event = Event;
-}
-
 parameter_types! {
     pub const SessionsPerEra: pallet_plasm_staking::SessionIndex = 6;
     pub const BondingDuration: pallet_plasm_staking::EraIndex = 24 * 28;
@@ -368,13 +364,11 @@ parameter_types! {
 }
 
 impl pallet_plasm_staking::Trait for Runtime {
-    type ComputeEraParam = u32;
-    type ComputeEra = Staking;
     type Currency = Balances;
     type UnixTime = Timestamp;
     type CurrencyToVote = CurrencyToVoteHandler;
-    type RewardRemainder = (); // TODO: make treasury
-    type Slash = (); // send the slashed funds to the treasury.
+    type RewardRemainder = Treasury; // TODO: make treasury
+    type Slash = Treasury; // send the slashed funds to the treasury.
 	type Reward = (); // rewards are minted from the void
     type SessionsPerEra = SessionsPerEra;
     type BondingDuration = BondingDuration;
@@ -802,8 +796,8 @@ construct_runtime!(
 
         // Network staking related pallets
         Authorship: pallet_authorship::{Module, Call, Storage, Inherent},
+        PlasmRewards: pallet_plasm_rewards::{Module, Call, Storage, Event<T>},
         Staking: pallet_plasm_staking::{Module, Call, Storage, Event<T>, Config<T>},
-        PlasmRewards: pallet_plasm_rewards::{Module, Call, Storage, Event<T>, Config<T>},
         Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
         Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned},
         Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned},

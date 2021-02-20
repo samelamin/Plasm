@@ -206,10 +206,6 @@ impl Trait for Test {
     type Currency = Balances;
     type UnixTime = Timestamp;
     type SessionsPerEra = SessionsPerEra;
-    type BondingDuration = BondingDuration;
-    type ComputeEraForDapps = DummyForDappsStaking;
-    type ComputeEraForSecurity = DummyForSecurityStaking;
-    type ComputeTotalPayout = inflation::MaintainRatioComputeTotalPayout<Balance>;
     type Event = ();
 }
 

@@ -19,7 +19,8 @@ sp-std = { version = "2.0.0", default_features = false }
 frame-support = { version = "2.0.0", default_features = false }
 pallet-session = { version = "2.0.0", default-features = false }
 frame-system = { version = "2.0.0", default_features = false }
-pallet-staking = { version = "2.0.0", default_features = false }
+pallet-plasm-staking = { path = "../plasm-staking", default-features = false }
+
 sp-staking = { version = "2.0.0", default_features = false }
 
 [dev-dependencies]
@@ -42,6 +43,6 @@ std = [
     "frame-support/std",
     "pallet-session/std",
     "frame-system/std",
-    "pallet-staking/std",
+    "pallet-plasm-staking/std",
     "sp-staking/std",
 ]

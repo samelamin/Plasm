@@ -280,10 +280,6 @@ pub mod slashing;
 pub mod offchain_election;
 pub mod weights;
 pub use weights::WeightInfo;
-pub mod traits;
-pub use traits::*;
-mod compute_era;
-pub use compute_era::*;
 
 use sp_std::{
 	result,
@@ -772,12 +768,6 @@ impl<T: Trait> SessionInterface<<T as frame_system::Trait>::AccountId> for T whe
 	}
 }
 pub trait Trait: pallet_session::Trait + SendTransactionTypes<Call<Self>> {
-
-	/// The return type of ComputeEraWithParam.
-    type ComputeEraParam;
-
-    /// Acutually computing of ComputeEraWithParam.
-    type ComputeEra: ComputeEraOnModule<Self::ComputeEraParam>;
 
 	/// The staking balance.
 	type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
@@ -2672,16 +2662,8 @@ impl<T: Trait> Module<T> {
 
 	/// Compute payout for era.
 	fn end_era(active_era: ActiveEraInfo, _session_index: SessionIndex) {
-		// Note: active_era_start can be None if end era is called during genesis config.
-		if let Some(active_era_start) = active_era.start {
-			let now_as_millis_u64 = T::UnixTime::now().as_millis().saturated_into::<u64>();
-
-			// TODO: Get validator payout recorded by plasm_rewards module and diplay results
-			
-		}
+		// There is no current function to do anything because it is controlled by plasm-rewards module.
 	}
-
-	fn set_total_reward() {}
 
 	/// Plan a new era. Return the potential new staking set.
 	fn new_era(start_session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
@@ -2954,6 +2936,8 @@ impl<T: Trait> Module<T> {
 		<ErasRewardPoints<T>>::remove(era_index);
 		<ErasTotalStake<T>>::remove(era_index);
 		ErasStartSessionIndex::remove(era_index);
+		<ForDappsEraReward<T>>::remove(era_index);
+        <ForSecurityEraReward<T>>::remove(era_index);
 	}
 
 	/// Apply previously-unapplied slashes on the beginning of a new era, after a delay.
@@ -3383,30 +3367,22 @@ fn to_invalid(error_with_post_info: DispatchErrorWithPostInfo) -> InvalidTransac
 	InvalidTransaction::Custom(error_number)
 }
 
-use pallet_plasm_rewards::{
-	ActiveEraInfo,
-    traits::{ComputeEraWithParam, EraFinder},
-    EraIndex,
-};
+pub trait ValidatorStatus<BalanceOf> {
 
-/// In this implementation using validator and dapps rewards module.
-impl<T: Trait> EraFinder<EraIndex, SessionIndex> for Module<T> {
-    fn current() -> Option<EraIndex> {
-        Self::current_era()
-	}
-	fn active() -> Option<ActiveEraInfo> {
-        Self::active_era()
-    }
-    fn start_session_index(era: &EraIndex) -> Option<SessionIndex> {
-        Self::eras_start_session_index(&era)
-    }
+	fn validator_count() -> u32;
+	
+	fn set_total_rewards(index: &u32, reward: BalanceOf);
 }
 
-/// Get the amount of staking per Era in a module in the Plasm Network
-/// for callinng by plasm-rewards when end era.
-impl<T: Trait> ComputeEraWithParam<EraIndex> for Module<T> {
-    type Param = T::ComputeEraParam;
-    fn compute(era: &EraIndex) -> T::ComputeEraParam {
-        T::ComputeEra::compute(era)
-    }
+
+
+impl<T: Trait> ValidatorStatus<BalanceOf<T>> for Module<T> {
+
+	fn validator_count() -> u32 {
+		return ValidatorCount::get();
+	}
+
+	fn set_total_rewards(index: &u32, reward: BalanceOf<T>) {
+		<ErasValidatorReward<T>>::insert(*index as EraIndex, reward);
+	}
 }

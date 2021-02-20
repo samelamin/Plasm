@@ -1,6 +1,6 @@
 [package]
 name = "pallet-plasm-staking"
-version = "0.1.0"
+version = "1.4.0"
 authors = ["Stake Technologies <hyungsuk@stake.co.jp>"]
 edition = "2018"
 license = "Apache-2.0"
@@ -23,11 +23,10 @@ pallet-session = { version = "2.0.0", default-features = false }
 pallet-authorship = { version = "2.0.0", default_features = false }
 frame-system = { version = "2.0.0", default_features = false }
 pallet-staking = { version = "2.0.0", default_features = false }
+pallet-staking-reward-curve = { version = "2.0.1", default_features = false }
 sp-staking = { version = "2.0.0", default_features = false }
 rand_chacha = {version = "0.2", default_features = false }
 sp-application-crypto = { version="2.0.0", default_features = false }
-pallet-plasm-rewards = { path = "../plasm-rewards", version = "1.7.0", default_features = false }
-
 
 
 [dev-dependencies]
@@ -37,9 +36,6 @@ pallet-balances = "2.0.0"
 pallet-timestamp = "2.0.0"
 pallet-randomness-collective-flip = "2.0.0"
 substrate-test-utils = "2.0.1"
-parking_lot = "0.11.1"
-frame-benchmarking = "2.0.0"
-sp-tracing = "2.0.0"
 
 [features]
 default = ["std"]
