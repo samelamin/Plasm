@@ -28,14 +28,18 @@ sp-staking = { version = "2.0.0", default_features = false }
 rand_chacha = {version = "0.2", default_features = false }
 sp-application-crypto = { version="2.0.0", default_features = false }
 
+# Optional imports for benchmarking
+frame-benchmarking = { version = "2.0.0", default-features = false, optional = true }
 
 [dev-dependencies]
 hex-literal = "0.2.1"
 sp-core = "2.0.0"
+sp-tracing = "2.0.0"
 pallet-balances = "2.0.0"
 pallet-timestamp = "2.0.0"
 pallet-randomness-collective-flip = "2.0.0"
 substrate-test-utils = "2.0.1"
+parking_lot = "0.11.1"
 
 [features]
 default = ["std"]

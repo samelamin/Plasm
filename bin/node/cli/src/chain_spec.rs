@@ -170,7 +170,7 @@ fn make_genesis(
     enable_println: bool,
 ) -> GenesisConfig {
 
-	const STASH: Balance = 1_000_000 * PLM;
+	const STASH: Balance = 0 * PLM;
     GenesisConfig {
         frame_system: Some(SystemConfig {
             code: WASM_BINARY.to_vec(),

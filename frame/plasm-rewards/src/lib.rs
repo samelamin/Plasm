@@ -82,13 +82,12 @@ pub trait Trait: pallet_session::Trait {
     /// Number of sessions per era.
     type SessionsPerEra: Get<SessionIndex>;
 
-    
     /// The overarching event type.
     type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 }
 
 decl_storage! {
-    trait Store for Module<T: Trait> as DappsStaking {
+    trait Store for Module<T: Trait> as PlasmRewards {
         /// This is the compensation paid for the dapps operator of the Plasm Network.
         /// This is stored on a per-era basis.
         pub ForDappsEraReward get(fn for_dapps_era_reward): map hasher(twox_64_concat) EraIndex => Option<BalanceOf<T>>;
@@ -180,14 +179,15 @@ decl_module! {
         fn on_finalize() {
             // Set the start of the first era.
 			if let Some(mut active_era) = Self::active_era() {
+                // if the era is untreated
 				if active_era.start.is_none() {
 					let now_as_millis_u64 = T::UnixTime::now().as_millis().saturated_into::<u64>();
 					active_era.start = Some(now_as_millis_u64);
+                    Self::end_era();
 					// This write only ever happens once, we don't include it in the weight in general
 					ActiveEra::put(active_era);
 				}
 			}
-			// `on_finalize` weight is tracked in `on_initialize`
         }
 
         // ----- Root calls.

@@ -25,6 +25,7 @@ impl_outer_dispatch! {
         pallet_session::Session,
         pallet_balances::Balances,
         plasm_rewards::PlasmRewards,
+        plasm_staking::PlasmStaking,
     }
 }
 
@@ -179,33 +180,11 @@ parameter_types! {
     pub const BondingDuration: EraIndex = 3;
 }
 
-impl pallet_plasm_staking::Trait for Test {
-	type Currency = Balances;
-	type UnixTime = Timestamp;
-	type CurrencyToVote = ();
-	type RewardRemainder = ();
-	type Event = ();
-	type Slash = ();
-	type Reward = ();
-	type SessionsPerEra = SessionsPerEra;
-	type SlashDeferDuration = ();
-	type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
-	type BondingDuration = BondingDuration;
-	type SessionInterface = ();
-	type NextNewSession = Session;
-	type ElectionLookahead = ();
-	type Call = ();
-	type MaxIterations = ();
-	type MinSolutionScoreBump = ();
-	type MaxNominatorRewardedPerValidator = ();
-	type UnsignedPriority = ();
-	type WeightInfo = ();
-}
-
 impl Trait for Test {
     type Currency = Balances;
     type UnixTime = Timestamp;
     type SessionsPerEra = SessionsPerEra;
+    type ValidatorInterface = Staking;
     type Event = ();
 }
 

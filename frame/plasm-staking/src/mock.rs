@@ -158,7 +158,7 @@ impl_outer_origin! {
 
 impl_outer_dispatch! {
 	pub enum Call for Test where origin: Origin {
-		staking::Staking,
+		pkasm_staking::PlasmStaking,
 	}
 }
 
@@ -298,22 +298,6 @@ impl OnUnbalanced<NegativeImbalanceOf<Test>> for RewardRemainderMock {
 		});
 		drop(amount);
 	}
-}
-
-pub struct DummyForSecurityStaking;
-impl ComputeEraWithParam<EraIndex> for DummyForSecurityStaking {
-    type Param = Balance;
-    fn compute(era: &EraIndex) -> Balance {
-        (era * 1_000_000).into()
-    }
-}
-
-pub struct DummyForDappsStaking;
-impl ComputeEraWithParam<EraIndex> for DummyForDappsStaking {
-    type Param = Balance;
-    fn compute(era: &EraIndex) -> Balance {
-        (era * 200_000).into()
-    }
 }
 
 impl Trait for Test {

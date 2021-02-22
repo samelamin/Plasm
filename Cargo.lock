@@ -4617,6 +4617,7 @@ dependencies = [
 name = "pallet-plasm-staking"
 version = "1.4.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex-literal 0.2.1",
@@ -4629,6 +4630,7 @@ dependencies = [
  "pallet-staking-reward-curve",
  "pallet-timestamp",
  "parity-scale-codec",
+ "parking_lot 0.11.1",
  "rand_chacha 0.2.2",
  "serde",
  "sp-application-crypto",
@@ -4639,6 +4641,7 @@ dependencies = [
  "sp-runtime",
  "sp-staking",
  "sp-std",
+ "sp-tracing",
  "static_assertions",
  "substrate-test-utils",
 ]

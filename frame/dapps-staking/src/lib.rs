@@ -1241,11 +1241,3 @@ impl<T: Trait> Module<T> {
             && votes.good < votes.bad
     }
 }
-
-/// Get the amount of staking per Era in a module in the Plasm Network.
-impl<T: Trait> ComputeEraWithParam<EraIndex> for Module<T> {
-    type Param = BalanceOf<T>;
-    fn compute(era: &EraIndex) -> BalanceOf<T> {
-        Self::compute_total_stake(era)
-    }
-}

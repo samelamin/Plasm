@@ -891,7 +891,7 @@ impl Default for Releases {
 }
 
 decl_storage! {
-	trait Store for Module<T: Trait> as Staking {
+	trait Store for Module<T: Trait> as PlasmStaking {
 		/// This is the compensation paid for the dapps operator of the Plasm Network.
         /// This is stored on a per-era basis.
         pub ForDappsEraReward get(fn for_dapps_era_reward): map hasher(twox_64_concat) EraIndex => Option<BalanceOf<T>>;
