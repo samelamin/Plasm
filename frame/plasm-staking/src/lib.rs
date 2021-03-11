@@ -830,10 +830,6 @@ pub trait Config: frame_system::Config + SendTransactionTypes<Call<Self>> {
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
 
-	/// The NPoS reward curve used to define yearly inflation.
-	/// See [Era payout](./index.html#era-payout).
-	type RewardCurve: Get<&'static PiecewiseLinear<'static>>;
-
 	/// Something that can estimate the next session change, accurately or as a best effort guess.
 	type NextNewSession: EstimateNextNewSession<Self::BlockNumber>;
 
