@@ -198,48 +198,6 @@ where
     }
 }
 
-pub fn compute_total_rewards<T>(
-        total_tokens: BalanceOf<T>,
-        era_duration: u64,
-        number_of_validator: u32,
-        _dapps_staking: u32,
-    ) -> (BalanceOf<T>, BalanceOf<T>)
-    where
-        T: crate::Trait,
-{
-    const TARGETS_NUMBER: u128 = 100;
-    const MILLISECONDS_PER_YEAR: u128 = 1000 * 3600 * 24 * 36525 / 100;
-    // I_0 = 2.5%.
-    const I_0_DENOMINATOR: u128 = 25;
-    const I_0_NUMERATOR: u128 = 1000;
-    let number_of_validator_clone: u128 = number_of_validator.clone().into();
-    let era_duration_clone: u128 = era_duration.clone().into();
-    let number_of_validator: u128 = number_of_validator.into();
-    let portion = if TARGETS_NUMBER < number_of_validator_clone {
-        // TotalForSecurityRewards
-        // = TotalAmountOfIssue * I_0% * (EraDuration / 1year)
-
-        // denominator: I_0_DENOMINATOR * EraDuration
-        // numerator: 1year * I_0_NUMERATOR
-        Perbill::from_rational_approximation(
-            I_0_DENOMINATOR * era_duration_clone,
-               MILLISECONDS_PER_YEAR * I_0_NUMERATOR,
-        )
-    } else {
-        // TotalForSecurityRewards
-        // = TotalAmountOfIssue * I_0% * (NumberOfValidators/TargetsNumber) * (EraDuration/1year)
-
-        // denominator: I_0_DENOMINATOR * NumberOfValidators * EraDuration
-        // numerator: 1year * I_0_NUMERATOR * TargetsNumber
-        Perbill::from_rational_approximation(
-            I_0_DENOMINATOR * number_of_validator * era_duration_clone,
-            MILLISECONDS_PER_YEAR * I_0_NUMERATOR * TARGETS_NUMBER,
-        )
-    };
-    let payout = portion * total_tokens;
-    (payout, BalanceOf::<T>::zero())
-}
-
 #[cfg(test)]
 mod test {
     use super::*;

@@ -1,6 +1,6 @@
 [package]
-name = "pallet-plasm-rewards"
-version = "1.8.0"
+name = "pallet-plasm-staking-rewards"
+version = "1.0.0"
 authors = ["Stake Technologies <devops@stake.co.jp>"]
 edition = "2018"
 license = "Apache-2.0"

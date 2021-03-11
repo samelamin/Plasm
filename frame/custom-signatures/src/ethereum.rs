@@ -5,6 +5,7 @@ use sp_core::ecdsa;
 use sp_io::{crypto::secp256k1_ecdsa_recover_compressed, hashing::keccak_256};
 use sp_runtime::traits::{IdentifyAccount, Lazy, Verify};
 use sp_runtime::MultiSignature;
+use sp_std::prelude::*;
 
 /// Ethereum-compatible signature type.
 #[derive(Encode, Decode, PartialEq, Eq, Clone)]
@@ -19,6 +20,20 @@ impl sp_std::fmt::Debug for EthereumSignature {
 impl From<ecdsa::Signature> for EthereumSignature {
     fn from(signature: ecdsa::Signature) -> Self {
         Self(signature.into())
+    }
+}
+
+impl sp_std::convert::TryFrom<Vec<u8>> for EthereumSignature {
+    type Error = ();
+
+    fn try_from(data: Vec<u8>) -> Result<Self, Self::Error> {
+        if data.len() == 65 {
+            let mut inner = [0u8; 65];
+            inner.copy_from_slice(&data[..]);
+            Ok(EthereumSignature(inner))
+        } else {
+            Err(())
+        }
     }
 }
 
