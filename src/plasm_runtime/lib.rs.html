@@ -1,7 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `bin/node/runtime/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `bin/node/runtime/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../plasm_runtime/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../plasm_runtime/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1072,6 +1072,22 @@
 <span id="1069">1069</span>
 <span id="1070">1070</span>
 <span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! The Substrate runtime. This can be compiled with ``#[no_std]`, ready for Wasm.</span>
 
@@ -1133,23 +1149,25 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">constants</span>;
 <span class="kw">use</span> <span class="ident">constants</span>::{<span class="ident">currency</span>::<span class="kw-2">*</span>, <span class="ident">time</span>::<span class="kw-2">*</span>};
 
+<span class="kw">mod</span> <span class="ident">precompiles</span>;
+
 <span class="comment">// Make the WASM binary available.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 <span class="macro">include</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/wasm_binary.rs&quot;</span>));
 
 <span class="doccomment">/// Runtime version.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VERSION</span>: <span class="ident">RuntimeVersion</span> <span class="op">=</span> <span class="ident">RuntimeVersion</span> {
-    <span class="ident">spec_name</span>: <span class="macro">create_runtime_str</span><span class="macro">!</span>(<span class="string">&quot;dusty3&quot;</span>),
+    <span class="ident">spec_name</span>: <span class="macro">create_runtime_str</span><span class="macro">!</span>(<span class="string">&quot;dusty4&quot;</span>),
     <span class="ident">impl_name</span>: <span class="macro">create_runtime_str</span><span class="macro">!</span>(<span class="string">&quot;staketechnologies-plasm&quot;</span>),
-    <span class="ident">authoring_version</span>: <span class="number">2</span>,
+    <span class="ident">authoring_version</span>: <span class="number">4</span>,
     <span class="comment">// Per convention: if the runtime behavior changes, increment spec_version</span>
     <span class="comment">// and set impl_version to equal spec_version. If only runtime</span>
     <span class="comment">// implementation changes and behavior does not, then leave spec_version as</span>
     <span class="comment">// is and increment impl_version.</span>
-    <span class="ident">spec_version</span>: <span class="number">11</span>,
-    <span class="ident">impl_version</span>: <span class="number">11</span>,
+    <span class="ident">spec_version</span>: <span class="number">5</span>,
+    <span class="ident">impl_version</span>: <span class="number">5</span>,
     <span class="ident">apis</span>: <span class="ident">RUNTIME_API_VERSIONS</span>,
-    <span class="ident">transaction_version</span>: <span class="number">2</span>,
+    <span class="ident">transaction_version</span>: <span class="number">1</span>,
 };
 
 <span class="doccomment">/// Native version.</span>
@@ -1429,7 +1447,7 @@ impl pallet_dapps_staking::Config for Runtime {
             <span class="op">&lt;</span><span class="ident">Runtime</span> <span class="kw">as</span> <span class="ident">pallet_contracts</span>::<span class="ident">Config</span><span class="op">&gt;</span>::<span class="ident">WeightInfo</span>::<span class="ident">on_initialize_per_queue_item</span>(<span class="number">1</span>) <span class="op">-</span>
             <span class="op">&lt;</span><span class="ident">Runtime</span> <span class="kw">as</span> <span class="ident">pallet_contracts</span>::<span class="ident">Config</span><span class="op">&gt;</span>::<span class="ident">WeightInfo</span>::<span class="ident">on_initialize_per_queue_item</span>(<span class="number">0</span>)
         )) <span class="op">/</span> <span class="number">5</span>) <span class="kw">as</span> <span class="ident">u32</span>;
-    <span class="kw">pub</span> <span class="ident">MaxCodeSize</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">128</span> <span class="op">*</span> <span class="number">1024</span>;
+    <span class="kw">pub</span> <span class="ident">MaxCodeSize</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">512</span> <span class="op">*</span> <span class="number">1024</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_contracts</span>::<span class="ident">Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
@@ -1455,12 +1473,18 @@ impl pallet_dapps_staking::Config for Runtime {
     <span class="kw">type</span> <span class="ident">MaxCodeSize</span> <span class="op">=</span> <span class="ident">MaxCodeSize</span>;
 }
 
-<span class="comment">/*
-impl pallet_contract_operator::Config for Runtime {
-    type Parameters = pallet_dapps_staking::parameters::StakingParameters;
-    type Event = Event;
+<span class="comment">// impl pallet_contract_operator::Config for Runtime {</span>
+<span class="comment">//     //type Parameters = pallet_dapps_staking::parameters::StakingParameters; TODO after pallet_dapps_staking update to sub3.0</span>
+<span class="comment">//     type Parameters = None;</span>
+<span class="comment">//     type Event = Event;</span>
+<span class="comment">// }</span>
+
+<span class="kw">impl</span> <span class="ident">pallet_plasm_operator</span>::<span class="ident">Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
+    <span class="comment">//type Parameters = pallet_dapps_staking::parameters::StakingParameters; TODO after pallet_dapps_staking update to sub3.0</span>
+    <span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
 }
 
+<span class="comment">/*
 impl pallet_operator_trading::Config for Runtime {
     type Currency = Balances;
     type OperatorFinder = Operator;
@@ -1468,6 +1492,18 @@ impl pallet_operator_trading::Config for Runtime {
     type Event = Event;
 }
 */</span>
+
+<span class="macro">parameter_types</span><span class="macro">!</span> {
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">MinVestedTransfer</span>: <span class="ident">Balance</span> <span class="op">=</span> <span class="number">1</span> <span class="op">*</span> <span class="ident">MILLIPLM</span>;
+}
+
+<span class="kw">impl</span> <span class="ident">pallet_vesting</span>::<span class="ident">Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
+    <span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+    <span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
+    <span class="kw">type</span> <span class="ident">BlockNumberToBalance</span> <span class="op">=</span> <span class="ident">ConvertInto</span>;
+    <span class="kw">type</span> <span class="ident">MinVestedTransfer</span> <span class="op">=</span> <span class="ident">MinVestedTransfer</span>;
+    <span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_vesting</span>::<span class="ident">weights</span>::<span class="ident">SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
+}
 
 <span class="kw">impl</span> <span class="ident">pallet_utility</span>::<span class="ident">Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
     <span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
@@ -1703,12 +1739,7 @@ impl pallet_plasma::Config for Runtime {
     <span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
     <span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
     <span class="kw">type</span> <span class="ident">Runner</span> <span class="op">=</span> <span class="ident">pallet_evm</span>::<span class="ident">runner</span>::<span class="ident">stack</span>::<span class="ident">Runner</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">Precompiles</span> <span class="op">=</span> (
-        <span class="ident">pallet_evm_precompile_simple</span>::<span class="ident">ECRecover</span>,
-        <span class="ident">pallet_evm_precompile_simple</span>::<span class="ident">Sha256</span>,
-        <span class="ident">pallet_evm_precompile_simple</span>::<span class="ident">Ripemd160</span>,
-        <span class="ident">pallet_evm_precompile_simple</span>::<span class="ident">Identity</span>,
-    );
+    <span class="kw">type</span> <span class="ident">Precompiles</span> <span class="op">=</span> <span class="ident">precompiles</span>::<span class="ident">PlasmPrecompiles</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">ChainId</span> <span class="op">=</span> <span class="ident">ChainId</span>;
 }
 
@@ -1769,6 +1800,7 @@ impl pallet_plasma::Config for Runtime {
         <span class="ident">UncheckedExtrinsic</span> <span class="op">=</span> <span class="ident">UncheckedExtrinsic</span>
     {
         <span class="ident">System</span>: <span class="ident">frame_system</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Config</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>},
+        <span class="ident">Vesting</span>: <span class="ident">pallet_vesting</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Config</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>},
         <span class="ident">Utility</span>: <span class="ident">pallet_utility</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Event</span>},
         <span class="ident">Timestamp</span>: <span class="ident">pallet_timestamp</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Inherent</span>},
         <span class="ident">Authorship</span>: <span class="ident">pallet_authorship</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Inherent</span>},
@@ -1786,7 +1818,7 @@ impl pallet_plasma::Config for Runtime {
         <span class="ident">Grandpa</span>: <span class="ident">pallet_grandpa</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Config</span>, <span class="ident">Event</span>, <span class="ident">ValidateUnsigned</span>},
         <span class="ident">ImOnline</span>: <span class="ident">pallet_im_online</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">ValidateUnsigned</span>, <span class="ident">Config</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>},
         <span class="ident">Offences</span>: <span class="ident">pallet_offences</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span>},
-        <span class="comment">//Operator: pallet_contract_operator::{Module, Call, Storage, Event&lt;T&gt;},</span>
+        <span class="ident">Operator</span>: <span class="ident">pallet_plasm_operator</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>},
         <span class="comment">//Trading: pallet_operator_trading::{Module, Call, Storage, Event&lt;T&gt;},</span>
         <span class="ident">RandomnessCollectiveFlip</span>: <span class="ident">pallet_randomness_collective_flip</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>},
         <span class="ident">Sudo</span>: <span class="ident">pallet_sudo</span>::{<span class="ident">Module</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Config</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>},
@@ -2145,4 +2177,5 @@ impl pallet_plasma::Config for Runtime {
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "plasm_runtime";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="plasm_runtime" data-search-js="../../search-index.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
