@@ -11,6 +11,9 @@ serde = { version = "1.0.106", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0", default-features = false, features = ["derive"] }
 smallvec = "1.6.1"
 
+#Kylin-oracle
+kylin-oracle = { package="kylin-oracle", git = "https://github.com/Kylin-Network/kylin-ocw-module", branch = "polkadot-v0.9.7", default-features = false }
+
 # primitives
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.7", default-features = false }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.7", default-features = false }
