@@ -1476,6 +1476,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "cumulus-pallet-aura-ext"
+version = "0.1.0"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.7#c5c3abf7eb9d4fdfb588d6560efaa8dca66a8dbc"
+dependencies = [
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "pallet-aura",
+ "parity-scale-codec",
+ "serde",
+ "sp-application-crypto",
+ "sp-consensus-aura",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "cumulus-pallet-parachain-system"
 version = "0.1.0"
 source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.7#c5c3abf7eb9d4fdfb588d6560efaa8dca66a8dbc"
@@ -4535,6 +4552,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ff55baddef9e4ad00f88b6c743a2a8062d4c6ade126c2a528644b8e444d52ce"
 dependencies = [
  "stable_deref_trait",
+]
+
+[[package]]
+name = "pallet-aura"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.7#9c572625f6557dfdb19f47474369a0327d51dfbc"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-consensus-aura",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -8441,6 +8474,7 @@ dependencies = [
 name = "shiden-runtime"
 version = "2.2.0"
 dependencies = [
+ "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
  "cumulus-pallet-xcm",
  "cumulus-pallet-xcmp-queue",
@@ -8451,6 +8485,7 @@ dependencies = [
  "frame-system",
  "frame-system-rpc-runtime-api",
  "kylin-oracle",
+ "pallet-aura",
  "pallet-balances",
  "pallet-identity",
  "pallet-sudo",
@@ -8466,6 +8501,7 @@ dependencies = [
  "smallvec 1.6.1",
  "sp-api",
  "sp-block-builder",
+ "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
  "sp-io",
@@ -8802,6 +8838,23 @@ dependencies = [
  "substrate-prometheus-endpoint",
  "thiserror",
  "wasm-timer",
+]
+
+[[package]]
+name = "sp-consensus-aura"
+version = "0.9.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.7#9c572625f6557dfdb19f47474369a0327d51dfbc"
+dependencies = [
+ "async-trait",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-consensus",
+ "sp-consensus-slots",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
+ "sp-timestamp",
 ]
 
 [[package]]

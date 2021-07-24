@@ -41,6 +41,8 @@ use xcm_builder::{
 use xcm_executor::{Config, XcmExecutor};
 use crate::sp_api_hidden_includes_IMPL_RUNTIME_APIS::sp_api::Encode;
 
+pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+
 pub use pallet_balances::Call as BalancesCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -64,6 +66,12 @@ pub fn wasm_binary_unwrap() -> &'static [u8] {
                         built with `BUILD_DUMMY_WASM_BINARY` flag and it is only usable for \
                         production chains. Please rebuild with the flag disabled.",
     )
+}
+
+impl_opaque_keys! {
+	pub struct SessionKeys {
+		pub aura: Aura,
+	}
 }
 
 /// Runtime version.
@@ -98,6 +106,23 @@ const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND / 2;
 
 pub const MILLISECS_PER_BLOCK: u64 = 6000;
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
+
+impl pallet_aura::Config for Runtime {
+    type AuthorityId = AuraId;
+}
+
+impl cumulus_pallet_aura_ext::Config for Runtime {}
+impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
+    fn slot_duration() -> sp_consensus_aura::SlotDuration {
+        sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
+    }
+
+    fn authorities() -> Vec<AuraId> {
+        Aura::authorities()
+    }
+}
+
+
 
 parameter_types! {
     pub const BlockHashCount: BlockNumber = 2400;
@@ -479,6 +504,9 @@ construct_runtime!(
         // Kylin Pallets
         KylinOraclePallet: kylin_oracle::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 52,
 
+        Aura: pallet_aura::{Pallet, Config<T>},
+		AuraExt: cumulus_pallet_aura_ext::{Pallet, Config},
+
         Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 99,
 
     }
@@ -633,6 +661,6 @@ impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
 
 cumulus_pallet_parachain_system::register_validate_block! {
     Runtime = Runtime,
-    BlockExecutor = Executive,
+	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
     CheckInherents = CheckInherents,
 }
